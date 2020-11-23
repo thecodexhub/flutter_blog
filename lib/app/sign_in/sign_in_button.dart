@@ -15,7 +15,7 @@ class SignInButton extends CustomRaisedButton {
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 15.0,
+              fontSize: 14.0,
               fontWeight: FontWeight.w600,
               color: textColor,
             ),

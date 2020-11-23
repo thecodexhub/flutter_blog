@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterblog/common_widgets/platform_alert_dialog.dart';
 import 'package:flutterblog/services/auth.dart';
 import 'package:provider/provider.dart';
 
@@ -20,7 +21,23 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _signOut(BuildContext context) async {
     final auth = Provider.of<AuthBase>(context, listen: false);
-    await auth.signOut();
+    try {
+      await auth.signOut();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final didRequestSignOut = await PlatformAlertDialog(
+      title: 'Logout',
+      content: 'Are you sure that you want to logout?',
+      defaultActionText: 'Logout',
+      cancelActionText: 'Cancel',
+    ).show(context);
+    if (didRequestSignOut == true) {
+      _signOut(context);
+    }
   }
 
   @override
@@ -34,9 +51,9 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         actions: [
           FlatButton(
-            onPressed: () => _signOut(context),
+            onPressed: () => _confirmSignOut(context),
             child: Text(
-              'Sign out',
+              'Log out',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16.0,
@@ -48,6 +65,7 @@ class _HomePageState extends State<HomePage> {
       body: _items.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
+        selectedItemColor: Colors.pink,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
@@ -89,7 +107,6 @@ class _ProfilePageState extends State<ProfilePage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CircularProgressIndicator();
           } else {
-            print(snapshot.data.displayName);
             return Center(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
