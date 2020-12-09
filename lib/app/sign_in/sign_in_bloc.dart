@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutterblog/app/sign_in/sign_in_model.dart';
+import 'package:flutterblog/services/app_user.dart';
 import 'package:flutterblog/services/auth.dart';
 
 class SignInBloc {
@@ -9,12 +10,12 @@ class SignInBloc {
 
   SignInBloc({@required this.auth});
 
-  final StreamController<EmailSignInModel> _modelController =
-      StreamController<EmailSignInModel>();
+  final StreamController<SignInModel> _modelController =
+      StreamController<SignInModel>();
 
-  Stream<EmailSignInModel> get modelStream => _modelController.stream;
+  Stream<SignInModel> get modelStream => _modelController.stream;
 
-  EmailSignInModel _model = EmailSignInModel();
+  SignInModel _model = SignInModel();
 
   void dispose() {
     _modelController.close();
@@ -43,7 +44,7 @@ class SignInBloc {
         await auth.signInWithEmailAndPassword(_model.email, _model.password);
       } else {
         await auth.createUserWithEmailAndPassword(
-            _model.email, _model.password, _model.username);
+            _model.email, _model.password);
       }
     } catch (e) {
       updateWith(isLoading: false);
@@ -56,7 +57,6 @@ class SignInBloc {
         ? SignInFormType.register
         : SignInFormType.logIn;
     updateWith(
-      username: '',
       email: '',
       password: '',
       formType: formType,
@@ -65,14 +65,11 @@ class SignInBloc {
     );
   }
 
-  void updateUsername(String username) => updateWith(username: username);
-
   void updateEmail(String email) => updateWith(email: email);
 
   void updatePassword(String password) => updateWith(password: password);
 
   void updateWith({
-    String username,
     String email,
     String password,
     SignInFormType formType,
@@ -81,7 +78,6 @@ class SignInBloc {
   }) {
     //  update the model
     _model = _model.copyWith(
-      username: username,
       email: email,
       password: password,
       formType: formType,

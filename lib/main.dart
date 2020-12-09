@@ -18,6 +18,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flutter Blog',
         debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: Colors.white,
+          brightness: Brightness.light,
+        ),
         home: LandingPage(),
       ),
     );

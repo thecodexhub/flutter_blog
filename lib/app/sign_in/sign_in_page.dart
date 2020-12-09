@@ -5,8 +5,10 @@ import 'package:flutterblog/app/sign_in/sign_in_model.dart';
 import 'package:flutterblog/app/sign_in/sign_in_button.dart';
 import 'package:flutterblog/app/sign_in/social_sign_in_button.dart';
 import 'package:flutterblog/common_widgets/app_icon.dart';
+import 'package:flutterblog/common_widgets/app_title.dart';
 import 'package:flutterblog/common_widgets/platform_alert_dialog.dart';
 import 'package:flutterblog/common_widgets/platform_exception_alert_dialog.dart';
+import 'package:flutterblog/constants.dart';
 import 'package:flutterblog/services/auth.dart';
 import 'package:provider/provider.dart';
 
@@ -34,11 +36,9 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final FocusNode _usernameFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
@@ -73,7 +73,6 @@ class _SignInPageState extends State<SignInPage> {
 
   void _toggleForm() {
     widget.bloc.toggleFormType();
-    _usernameController.clear();
     _emailController.clear();
     _passwordController.clear();
   }
@@ -94,14 +93,12 @@ class _SignInPageState extends State<SignInPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _usernameController.dispose();
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
-    _usernameFocusNode.dispose();
     super.dispose();
   }
 
-  Widget _buildPasswordTextField(EmailSignInModel model) {
+  Widget _buildPasswordTextField(SignInModel model) {
     return Theme(
       data: Theme.of(context).copyWith(primaryColor: Colors.black),
       child: TextField(
@@ -143,7 +140,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Widget _buildEmailTextField(EmailSignInModel model) {
+  Widget _buildEmailTextField(SignInModel model) {
     return TextField(
       controller: _emailController,
       focusNode: _emailFocusNode,
@@ -170,47 +167,20 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Widget _buildUsernameTextField(EmailSignInModel model) {
-    return TextField(
-      controller: _usernameController,
-      focusNode: _usernameFocusNode,
-      cursorColor: Colors.black,
-      style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.grey[300],
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6.0),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6.0),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-        hintText: 'Full name',
-        errorText: model.usernameErrorText,
-        enabled: model.isLoading == false,
-      ),
-      onChanged: widget.bloc.updateUsername,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder<EmailSignInModel>(
+      body: StreamBuilder<SignInModel>(
           stream: widget.bloc.modelStream,
-          initialData: EmailSignInModel(),
+          initialData: SignInModel(),
           builder: (context, snapshot) {
-            final EmailSignInModel model = snapshot.data;
+            final SignInModel model = snapshot.data;
             return _buildContent(context, model);
           }),
     );
   }
 
-  Widget _buildContent(BuildContext context, EmailSignInModel model) {
+  Widget _buildContent(BuildContext context, SignInModel model) {
     return Stack(
       children: [
         Padding(
@@ -231,18 +201,16 @@ class _SignInPageState extends State<SignInPage> {
                 SizedBox(height: 12.0),
                 _buildHeader(),
                 SizedBox(height: 30.0),
-                model.showUsernameTextField ? _buildUsernameTextField(model) : Container(),
-                model.showUsernameTextField ? SizedBox(height: 12.0) : Container(),
                 _buildEmailTextField(model),
                 SizedBox(height: 12.0),
                 _buildPasswordTextField(model),
                 SizedBox(height: 12.0),
-                model.showUsernameTextField
+                model.showRegisterForm
                     ? Container()
                     : _forgotPassword(
                         onPressed: () {},
                       ),
-                model.showUsernameTextField ? Container() : SizedBox(height: 12.0),
+                model.showRegisterForm ? Container() : SizedBox(height: 12.0),
                 SignInButton(
                   label: model.signInButtonText,
                   color: Colors.black87,
@@ -282,7 +250,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Widget _buildSocialSignInButtons(EmailSignInModel model) {
+  Widget _buildSocialSignInButtons(SignInModel model) {
     final String actionText = model.formType == SignInFormType.logIn
         ? 'Or sign in with'
         : 'Or sign up with';
@@ -387,17 +355,9 @@ class _SignInPageState extends State<SignInPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(
-          '.blog',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 30.0,
-            foreground: Paint()
-              ..shader = LinearGradient(colors: [
-                Colors.deepPurple[800],
-                Colors.pink,
-              ]).createShader(Rect.fromLTWH(160, 0, 85, 35)),
-          ),
+        AppTitle(
+          leftMargin: 160.0,
+          fontSize: 30.0,
         ),
       ],
     );

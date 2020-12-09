@@ -1,26 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:flutterblog/constants.dart';
+import 'package:flutterblog/services/app_user.dart';
+import 'package:flutterblog/services/database.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-
-class AppUser {
-  AppUser({
-    @required this.uid,
-    @required this.displayName,
-    @required this.photoUrl,
-  });
-  final String uid;
-  final String displayName;
-  final String photoUrl;
-}
 
 abstract class AuthBase {
   Stream<AppUser> get authStateChanges;
   Future<AppUser> currentUser();
   Future<AppUser> signInWithEmailAndPassword(String email, String password);
-  Future<AppUser> createUserWithEmailAndPassword(
-      String email, String password, String name);
+  Future<AppUser> createUserWithEmailAndPassword(String email, String password);
   Future<AppUser> signInWithGoogle();
   Future<AppUser> signInWithFacebook();
   Future<void> signOut();
@@ -28,6 +20,7 @@ abstract class AuthBase {
 
 class Auth implements AuthBase {
   final _firebaseAuth = FirebaseAuth.instance;
+  final database = FirestoreDatabase();
 
   AppUser _userFromFirebase(User user) {
     if (user == null) {
@@ -61,15 +54,19 @@ class Auth implements AuthBase {
 
   @override
   Future<AppUser> createUserWithEmailAndPassword(
-      String email, String password, String name) async {
+      String email, String password) async {
     final authResult = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
 
     // Update username
-    await authResult.user.updateProfile(displayName: name);
-    await authResult.user.reload();
-    User user = _firebaseAuth.currentUser;
-     return _userFromFirebase(user);
+    // final database = FirestoreDatabase();
+    // await database.createUser(AppUser(
+    //   uid: authResult.user.uid,
+    //   displayName: name,
+    //   photoUrl: authResult.user.photoURL,
+    //   about: '',
+    // ));
+    return _userFromFirebase(authResult.user);
   }
 
   @override
@@ -83,7 +80,16 @@ class Auth implements AuthBase {
             .signInWithCredential(GoogleAuthProvider.credential(
           idToken: googleAuth.idToken,
           accessToken: googleAuth.accessToken,
-        ));
+        ))
+            .then((value) async {
+          await database.createUser(
+            AppUser(
+              uid: value.user.uid,
+              displayName: value.user.displayName,
+              photoUrl: value.user.photoURL,
+            ),
+          );
+        });
         return _userFromFirebase(authResult.user);
       } else {
         throw PlatformException(
@@ -106,9 +112,19 @@ class Auth implements AuthBase {
       ['public_profile'],
     );
     if (result.accessToken != null) {
-      final authResult = await _firebaseAuth.signInWithCredential(
+      final authResult = await _firebaseAuth
+          .signInWithCredential(
         FacebookAuthProvider.credential(result.accessToken.token),
-      );
+      )
+          .then((value) async {
+        await database.createUser(
+          AppUser(
+            uid: value.user.uid,
+            displayName: value.user.displayName,
+            photoUrl: value.user.photoURL,
+          ),
+        );
+      });
       return _userFromFirebase(authResult.user);
     } else {
       throw PlatformException(

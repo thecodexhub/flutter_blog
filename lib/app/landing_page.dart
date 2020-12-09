@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutterblog/app/home/home_page.dart';
+import 'package:flutterblog/app/home/bottom_navigation_view/bottom_navigation_view.dart';
 import 'package:flutterblog/app/sign_in/sign_in_page.dart';
+import 'package:flutterblog/services/app_user.dart';
 import 'package:flutterblog/services/auth.dart';
+import 'package:flutterblog/services/database.dart';
 import 'package:provider/provider.dart';
 
 class LandingPage extends StatelessWidget {
@@ -16,7 +18,13 @@ class LandingPage extends StatelessWidget {
           if (appUser == null) {
             return SignInPage.create(context);
           }
-          return HomePage(appUser: appUser);
+          return Provider<AppUser>.value(
+            value: appUser,
+            child: Provider<Database>(
+              create: (context) => FirestoreDatabase(),
+              child: BottomNavigationView.create(context),
+            ),
+          );
         }
         return Scaffold(
           body: Center(

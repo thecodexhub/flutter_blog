@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterblog/constants.dart';
 
 class AppIcon extends StatelessWidget {
   AppIcon({
@@ -29,7 +30,7 @@ class AppIcon extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          '.b',
+          appName[0],
           style: TextStyle(
             color: Colors.white,
             fontSize: fontSize,

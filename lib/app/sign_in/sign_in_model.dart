@@ -2,9 +2,8 @@ import 'package:flutterblog/app/sign_in/validators.dart';
 
 enum SignInFormType { logIn, register }
 
-class EmailSignInModel with UsernameEmailAndPasswordValidators {
-  EmailSignInModel({
-    this.username = '',
+class SignInModel with UsernameEmailAndPasswordValidators {
+  SignInModel({
     this.email = '',
     this.password = '',
     this.formType = SignInFormType.logIn,
@@ -12,7 +11,6 @@ class EmailSignInModel with UsernameEmailAndPasswordValidators {
     this.isLoading = false,
   });
 
-  final String username;
   final String email;
   final String password;
   final SignInFormType formType;
@@ -33,24 +31,14 @@ class EmailSignInModel with UsernameEmailAndPasswordValidators {
     return formType == SignInFormType.logIn ? 'Join now' : 'Log in';
   }
 
-  bool get showUsernameTextField {
+  bool get showRegisterForm {
     return formType == SignInFormType.logIn ? false : true;
   }
 
   bool get canSubmit {
-    return formType == SignInFormType.logIn
-        ? emailValidator.isValid(email) &&
-            passwordValidator.isValid(password) &&
-            !isLoading
-        : usernameValidator.isValid(username) &&
-            emailValidator.isValid(email) &&
-            passwordValidator.isValid(password) &&
-            !isLoading;
-  }
-
-  String get usernameErrorText {
-    bool showErrorText = submitted && !usernameValidator.isValid(username);
-    return showErrorText ? invalidUsernameErrorText : null;
+    return emailValidator.isValid(email) &&
+        passwordValidator.isValid(password) &&
+        !isLoading;
   }
 
   String get emailErrorText {
@@ -63,16 +51,14 @@ class EmailSignInModel with UsernameEmailAndPasswordValidators {
     return showErrorText ? invalidPasswordErrorText : null;
   }
 
-  EmailSignInModel copyWith({
-    String username,
+  SignInModel copyWith({
     String email,
     String password,
     SignInFormType formType,
     bool submitted,
     bool isLoading,
   }) {
-    return EmailSignInModel(
-      username: username ?? this.username,
+    return SignInModel(
       email: email ?? this.email,
       password: password ?? this.password,
       formType: formType ?? this.formType,
